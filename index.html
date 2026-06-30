@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>zunepod — 나도 좋고 남도 좋은</title>
+<meta name="description" content="당연한 불편을 가능으로 바꾸는 도구를 짓는다. 나도 좋고, 남도 좋은.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --void:#0A0A0D;--panel:#141418;--panel-2:#1B1B20;
+    --line:rgba(225,210,178,.10);--line-s:rgba(225,210,178,.22);
+    --ink:#EDE9E0;--ink-d:#9B9690;--ink-f:#5C5854;
+    --gold:#C8903A;--gold-b:#E0A84A;--gold-s:rgba(200,144,58,.11);
+    --ok:#7FCA8C;--ok-s:rgba(127,202,140,.08);
+    --sans:'Pretendard','Pretendard Variable','Apple SD Gothic Neo','Noto Sans KR',system-ui,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,'SF Mono','Menlo',monospace;
+    --mw:940px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--void);color:var(--ink);font-family:var(--sans);
+    font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:radial-gradient(rgba(225,210,178,.024) 1px,transparent 1px);background-size:26px 26px}
+  ::selection{background:rgba(200,144,58,.28);color:#fff}
+
+  .nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px) saturate(140%);
+    background:rgba(10,10,13,.76);border-bottom:1px solid var(--line)}
+  .nav-in{max-width:var(--mw);margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+  .wm-nav{font-family:var(--mono);font-size:14px;font-weight:700;letter-spacing:.04em;color:var(--ink)}
+  .wm-nav b{color:var(--gold)}
+  .gh{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--ink-f);
+    border:1px solid var(--line);padding:7px 14px;border-radius:7px;text-decoration:none;transition:color .2s,border-color .2s}
+  .gh:hover{color:var(--gold);border-color:rgba(200,144,58,.5)}
+
+  .w{max-width:var(--mw);margin:0 auto;padding:0 24px;position:relative;z-index:1}
+  .sec{padding:clamp(60px,10vw,112px) 0;position:relative;z-index:1}
+  .sec-t{padding-top:clamp(36px,5vw,52px)}
+  .rh{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--gold);display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .rh .ln{flex:1;height:1px;background:var(--line)}
+  .rh .ct{color:var(--ink-f)}
+
+  .hero{position:relative;overflow:hidden;padding:clamp(80px,16vw,160px) 0 clamp(64px,10vw,112px)}
+  .wm{position:absolute;font-family:var(--sans);white-space:nowrap;font-weight:900;color:var(--gold);
+    pointer-events:none;user-select:none;z-index:0;letter-spacing:-.025em;line-height:1;font-size:clamp(56px,13vw,156px)}
+  .wm-1{top:50%;left:50%;transform:translate(-50%,-50%);opacity:.052}
+  .wm-2{top:82%;left:50%;transform:translate(-50%,-50%);opacity:.026;font-size:clamp(34px,7vw,80px)}
+  .hb{position:relative;z-index:1}
+  .ey{font-family:var(--mono);font-size:12px;letter-spacing:.10em;color:var(--gold);
+    display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin-bottom:26px}
+  .ey .s{color:var(--line-s)}
+  h1{font-size:clamp(3rem,10.5vw,6.4rem);font-weight:900;line-height:.94;letter-spacing:-.04em;margin:0 0 30px}
+  h1 .dm{color:var(--ink-d)}
+  .hl{font-size:clamp(1rem,2.1vw,1.22rem);color:var(--ink-d);max-width:48ch;line-height:1.62}
+  .hl b{color:var(--ink);font-weight:600}
+  .hl .g{color:var(--gold);font-weight:600}
+
+  .frow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+  .ft{font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ink-f);
+    background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 13px;
+    cursor:pointer;line-height:1;transition:color .18s,border-color .18s,background .18s}
+  .ft:hover{color:var(--ink-d);border-color:var(--line-s)}
+  .ft.on{color:var(--gold);border-color:rgba(200,144,58,.45);background:var(--gold-s)}
+  .ft:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+  .wlog{display:flex;flex-direction:column}
+  .ent{display:grid;grid-template-columns:74px 1fr auto;gap:0 22px;padding:22px 0;
+    border-top:1px solid var(--line);text-decoration:none;color:inherit;align-items:start}
+  .ent:last-child{border-bottom:1px solid var(--line)}
+  .ent:hover .en{color:var(--gold)}
+  .ent:hover .ar{transform:translate(3px,-3px);color:var(--gold)}
+  .ent.hid{display:none}
+  .dm-tag{font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--ink-f);padding-top:3px;line-height:1.5}
+  .eb{min-width:0}
+  .en{font-size:1.18rem;font-weight:700;letter-spacing:-.01em;margin-bottom:6px;transition:color .2s;line-height:1.2}
+  .ed{color:var(--ink-d);font-size:.94rem;line-height:1.56;margin:0}
+  .er{display:flex;flex-direction:column;align-items:flex-end;gap:9px;padding-top:3px}
+  .st{font-family:var(--mono);font-size:11px;letter-spacing:.05em;border-radius:999px;
+    padding:4px 11px;border:1px solid;white-space:nowrap}
+  .ok{color:var(--ok);border-color:rgba(127,202,140,.35);background:var(--ok-s)}
+  .dn{color:var(--gold-b);border-color:rgba(200,144,58,.35);background:var(--gold-s)}
+  .wp{color:var(--ink-f);border-color:var(--line);background:transparent}
+  .ar{font-size:18px;color:var(--ink-f);line-height:1;transition:transform .22s ease,color .22s ease}
+
+  .pb{border:1px solid var(--line);border-left:2px solid var(--gold);background:var(--panel);
+    border-radius:16px;padding:clamp(28px,5vw,52px) clamp(24px,5vw,52px);
+    display:grid;grid-template-columns:1fr auto;gap:24px 56px;align-items:center}
+  .pl{font-family:var(--mono);font-size:11px;letter-spacing:.10em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+  .pt{font-size:clamp(1.7rem,4.2vw,2.6rem);font-weight:900;letter-spacing:-.025em;line-height:1.06;color:var(--ink)}
+  .ps{margin:14px 0 0;color:var(--ink-d);font-size:.97rem;max-width:46ch;line-height:1.62}
+  .pglyph{font-size:clamp(32px,7vw,60px);font-weight:900;color:var(--gold);opacity:.35;line-height:1;user-select:none;text-align:center}
+
+  .ig{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:44px}
+  .ic{border:1px solid var(--line);background:var(--panel);border-radius:13px;padding:24px;transition:border-color .2s,background .2s}
+  .ic:hover{border-color:var(--line-s);background:var(--panel-2)}
+  .ik{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  .iv{font-size:.95rem;color:var(--ink-d);line-height:1.6}
+  .iv b{color:var(--ink);font-weight:600}
+
+  .foot{border-top:1px solid var(--line);padding:42px 0 64px}
+  .fi{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  .fs{font-family:var(--mono);font-size:12px;color:var(--ink-f);letter-spacing:.03em}
+  .fs b{color:var(--gold);font-weight:500}
+  .fl{font-family:var(--mono);font-size:12px;color:var(--ink-f);text-decoration:none;
+    border-bottom:1px solid var(--line);padding-bottom:2px;transition:color .2s,border-color .2s}
+  .fl:hover{color:var(--gold);border-color:var(--gold)}
+
+  .rv{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease}
+  .rv.in{opacity:1;transform:none}
+
+  @media(max-width:680px){
+    .ent{grid-template-columns:52px 1fr}
+    .er{grid-column:2;flex-direction:row;justify-content:flex-start;margin-top:10px}
+    .ar{display:none}
+    .pb{grid-template-columns:1fr}
+    .pglyph{display:none}
+    .ig{grid-template-columns:1fr}
+  }
+  @media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-in">
+    <div class="wm-nav">zune<b>pod</b></div>
+    <a href="https://github.com/zunepod" target="_blank" rel="noopener" class="gh">github/zunepod ↗</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wm wm-1" aria-hidden="true">나도 좋고 남도 좋은</div>
+  <div class="wm wm-2" aria-hidden="true">나도 좋고 남도 좋은</div>
+  <div class="w hb">
+    <div class="ey rv"><span>zunepod</span><span class="s">/</span><span>포트폴리오</span><span class="s">/</span><span>2026</span></div>
+    <h1 class="rv">불가능을<br><span class="dm">가능하게.</span></h1>
+    <p class="hl rv">당연한 불편에 갇혀 있는 사람에게 <b>출구를 만들어주는</b> 도구를 짓는다.<br>원칙은 하나 — <span class="g">나도 좋고, 남도 좋은.</span></p>
+  </div>
+</header>
+
+<section class="sec sec-t" id="works">
+  <div class="w">
+    <div class="rh rv"><span>Works</span><span class="ln"></span><span class="ct" id="cnt">불러오는 중…</span></div>
+    <div class="frow" id="filterRow"></div>
+    <div class="wlog" id="workList"></div>
+  </div>
+</section>
+
+<section class="sec" id="principle">
+  <div class="w">
+    <div class="pb rv">
+      <div>
+        <div class="pl">핵심 원칙</div>
+        <div class="pt">나도 좋고<br>남도 좋은.</div>
+        <p class="ps">도구는 내 문제를 풀어야 하고, 동시에 남의 삶도 나아지게 해야 한다. 어느 한쪽만 되는 건 반쪽짜리다.</p>
+      </div>
+      <div class="pglyph" aria-hidden="true">나↔남</div>
+    </div>
+  </div>
+</section>
+
+<section class="sec sec-t" id="identity">
+  <div class="w">
+    <div class="rh rv"><span>Identity</span><span class="ln"></span></div>
+    <div class="ig">
+      <div class="ic rv"><div class="ik">Builder</div><div class="iv"><b>화이트햇 문제해결사.</b> 정규화된 불편을 당연하지 않게 만든다.</div></div>
+      <div class="ic rv"><div class="ik">Ecosystem</div><div class="iv">Galaxy Z Fold · Nothing · iPhone · iPad Pro M4 · NAS — <b>교차 생태계 풀 스택.</b></div></div>
+      <div class="ic rv"><div class="ik">Principle</div><div class="iv"><b>추가만.</b> 빼앗지 않고 더한다. 처벌 없이 보상한다. 강제 없이 기여한다.</div></div>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="w">
+    <div class="fi">
+      <div class="fs">zunepod · <b>나도 좋고 남도 좋은</b> · 2026</div>
+      <a href="https://github.com/zunepod" target="_blank" rel="noopener" class="fl">github.com/zunepod ↗</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // ── reveal observer (shared) ──
+  var rm = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var io = (!rm && 'IntersectionObserver' in window)
+    ? new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.1,rootMargin:'0px 0px -6% 0px'})
+    : null;
+  function reveal(scope){
+    var els=(scope||document).querySelectorAll('.rv');
+    if(io){ els.forEach(function(el){io.observe(el);}); }
+    else { els.forEach(function(el){el.classList.add('in');}); }
+  }
+  reveal(document);
+
+  // ── status → class ──
+  function sc(s){ return {'활성':'ok','설계완료':'dn','빌드완료':'dn','진행중':'wp'}[s] || 'wp'; }
+
+  var filterRow=document.getElementById('filterRow');
+  var workList=document.getElementById('workList');
+  var cnt=document.getElementById('cnt');
+
+  function render(list){
+    // filters (domains in order of appearance)
+    var doms=[]; list.forEach(function(p){ if(doms.indexOf(p.domain)<0) doms.push(p.domain); });
+    filterRow.innerHTML='<button class="ft on" data-f="all">전체</button>'+
+      doms.map(function(d){return '<button class="ft" data-f="'+d+'">'+d+'</button>';}).join('');
+    cnt.textContent=list.length+' 프로젝트';
+
+    workList.innerHTML=list.map(function(p){
+      var inner='<span class="dm-tag">'+p.domain+'</span>'+
+        '<div class="eb"><div class="en">'+p.title+'</div><p class="ed">'+p.desc+'</p></div>'+
+        '<div class="er"><span class="st '+sc(p.status)+'">'+p.status+'</span>'+(p.url?'<span class="ar">↗</span>':'')+'</div>';
+      if(p.url){
+        var ext=/^https?:/.test(p.url);
+        return '<a class="ent rv" data-d="'+p.domain+'" href="'+p.url+'"'+(ext?' target="_blank" rel="noopener"':'')+'>'+inner+'</a>';
+      }
+      return '<div class="ent rv" data-d="'+p.domain+'" style="cursor:default">'+inner+'</div>';
+    }).join('');
+
+    reveal(workList);
+
+    // filter clicks
+    filterRow.addEventListener('click',function(e){
+      var b=e.target.closest('.ft'); if(!b) return;
+      filterRow.querySelectorAll('.ft').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on');
+      var f=b.dataset.f, n=0;
+      workList.querySelectorAll('.ent').forEach(function(el){
+        var show=(f==='all'||el.dataset.d===f);
+        el.classList.toggle('hid',!show); if(show)n++;
+      });
+      cnt.textContent=n+' 프로젝트';
+    });
+  }
+
+  fetch('projects.json')
+    .then(function(r){ if(!r.ok) throw new Error('load'); return r.json(); })
+    .then(function(data){ render(data.projects||[]); })
+    .catch(function(){
+      cnt.textContent='—';
+      workList.innerHTML='<div style="padding:40px 0;color:var(--ink-d);font-size:.92rem;line-height:1.7">'+
+        'projects.json을 불러오지 못했어요. 이 페이지는 GitHub Pages 주소(또는 로컬 서버)에서 열어야 목록이 표시됩니다. '+
+        '파일을 더블클릭해서 여는 방식(file://)은 브라우저 보안 때문에 막혀요.</div>';
+    });
+})();
+</script>
+</body>
+</html>
