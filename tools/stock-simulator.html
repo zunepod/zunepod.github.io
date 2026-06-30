@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>껄껄껄 시뮬레이터 — zunepod</title>
+<meta name="description" content="주식 장기투자 시뮬레이터. 불가능을 가능하게.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --bg:#0A0A0D;--panel:#141418;--panel2:#1B1B20;
+    --line:rgba(225,210,178,.10);--lineS:rgba(225,210,178,.22);
+    --ink:#EDE9E0;--dim:#9B9690;--faint:#5C5854;
+    --gold:#C8903A;--goldB:#E0A84A;--goldS:rgba(200,144,58,.11);
+    --green:#7FCA8C;--greenS:rgba(127,202,140,.09);--red:#E06060;
+    --mono:'JetBrains Mono',ui-monospace,'SF Mono','Menlo',monospace;
+    --sans:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+    font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;padding-bottom:60px}
+  ::selection{background:rgba(200,144,58,.28);color:#fff}
+  .hd{border-bottom:1px solid var(--line);padding:16px 20px 14px}
+  .hd .t{font-family:var(--mono);font-size:13px;color:var(--gold);letter-spacing:.04em}
+  .hd .s{color:var(--dim);font-size:.84rem;margin-top:3px}
+  .tabs{display:flex;gap:8px;padding:14px 20px;border-bottom:1px solid var(--line)}
+  .body{padding:0 20px;max-width:600px;margin:0 auto}
+
+  .pill{font-family:var(--mono);font-size:12px;padding:7px 15px;border-radius:999px;
+    border:1px solid var(--line);background:transparent;color:var(--dim);cursor:pointer;
+    line-height:1;transition:all .18s}
+  .pill:hover{color:var(--ink);border-color:var(--lineS)}
+  .pill.on{color:var(--gold);border-color:var(--gold);background:var(--goldS)}
+  .pill.sm{font-size:11px;padding:5px 11px}
+  .flex{display:flex;gap:8px}
+  .fb{flex:1;padding:10px 8px;border-radius:8px;border:1px solid var(--line);
+    background:var(--panel);color:var(--dim);cursor:pointer;font-family:var(--sans);
+    font-size:.9rem;transition:all .18s}
+  .fb.on{color:var(--gold);border-color:var(--gold);background:var(--goldS);font-weight:700}
+  .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.10em;text-transform:uppercase;
+    color:var(--gold);margin:22px 0 10px}
+  .lbl .x{color:var(--dim);text-transform:none;letter-spacing:0}
+  .input{width:100%;background:var(--panel2);border:1px solid var(--lineS);border-radius:10px;
+    padding:13px 16px;color:var(--ink);font-size:1.05rem;font-family:var(--sans);outline:none}
+  .input:focus{border-color:var(--gold)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+  .row{display:flex;flex-wrap:wrap;gap:7px}
+
+  .sgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+  .sc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;transition:all .18s}
+  .sc.on{background:var(--goldS);border-color:var(--gold)}
+  .sc .tk{font-family:var(--mono);font-size:10px;color:var(--gold);margin-bottom:3px}
+  .sc .nm{font-weight:700;font-size:.96rem;margin-bottom:2px}
+  .sc .sb{font-size:.78rem;color:var(--dim);line-height:1.4}
+
+  .drow{display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid var(--line)}
+  .drow .k{color:var(--dim);font-size:.88rem}
+  .drow .v{font-family:var(--mono);font-size:.88rem}
+
+  .rcard{background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:22px;margin-top:22px}
+  .rcard .lab{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.08em}
+  .rcard .big{font-size:clamp(2rem,8vw,3rem);font-weight:900;letter-spacing:-.02em;line-height:1.05;margin:14px 0 4px}
+  .rcard .sub{font-family:var(--mono);font-size:13px;color:var(--dim);margin-bottom:8px}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .bdg{font-family:var(--mono);font-size:11px;letter-spacing:.04em;border-radius:999px;padding:4px 11px;border:1px solid}
+
+  .note{background:var(--goldS);border:1px solid rgba(200,144,58,.2);border-radius:10px;padding:16px;margin-bottom:6px}
+  .note .h{font-family:var(--mono);font-size:11px;color:var(--gold);margin-bottom:7px}
+  .note .b{font-size:.92rem;color:var(--ink);line-height:1.65}
+
+  .stag{font-family:var(--mono);font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:6px;padding:4px 9px;background:var(--panel2)}
+  .scn{display:flex;flex-direction:column;gap:10px;margin:22px 0 16px}
+  .scn .it{background:var(--panel);border-radius:11px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+
+  .disc{font-size:.73rem;color:var(--faint);text-align:center;line-height:1.6;margin-top:24px}
+  input[type=range]{width:100%;accent-color:var(--gold)}
+  .hide{display:none!important}
+</style>
+</head>
+<body>
+  <div class="hd">
+    <div class="t">ZUNEPOD · 주식 시뮬레이터</div>
+    <div class="s">불가능을 가능하게 — 주식 장기투자 시뮬레이터</div>
+  </div>
+
+  <div class="tabs">
+    <button class="pill on" id="tabPast">😩 껄껄껄 · 과거</button>
+    <button class="pill" id="tabFuture">🚀 지금이라도 · 미래</button>
+  </div>
+
+  <div class="body">
+    <!-- PAST -->
+    <div id="pastPane">
+      <div class="lbl">종목 선택</div>
+      <div class="sgrid" id="stockGrid"></div>
+      <div id="yearSec"></div>
+      <div id="typeSec"></div>
+      <div id="amtSec"></div>
+      <div id="pastResult"></div>
+    </div>
+
+    <!-- FUTURE -->
+    <div id="futurePane" class="hide">
+      <div class="card" style="border-color:rgba(200,144,58,.2);margin-top:20px">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--gold);margin-bottom:7px">지금이라도 늦지 않았다</div>
+        <div style="color:var(--dim);font-size:.9rem;line-height:1.6">오늘 투자하면 몇 년 후 얼마가 될까?<br>세 가지 시나리오로 꿈을 그려본다.</div>
+      </div>
+      <div class="lbl">통화</div>
+      <div id="fcurSec"></div>
+      <div id="fAmtSec"></div>
+      <div class="lbl">투자 기간</div>
+      <div id="fyearsSec"></div>
+      <div id="futureResult"></div>
+    </div>
+
+    <div class="disc">
+      * 주가는 교육 목적의 근사치(분할 조정)이며 실제와 다를 수 있습니다.<br>
+      과거 수익이 미래 수익을 보장하지 않습니다. 투자 책임은 본인에게 있습니다.
+    </div>
+  </div>
+
+<script>
+"use strict";
+const USD_KRW = 1380;
+const monoFA = "JetBrains Mono, monospace";
+const CC = { green:"#7FCA8C", gold:"#C8903A", red:"#E06060", faint:"#5C5854" };
+
+const STOCKS = [
+  { id:"nvda", name:"NVIDIA", ticker:"NVDA", cur:"USD", flag:"🇺🇸", sub:"AI칩 · GPU · 데이터센터",
+    p:{2015:1.2,2017:2.4,2019:6.1,2021:29.0,2023:49.5,2025:121.0} },
+  { id:"tsla", name:"Tesla", ticker:"TSLA", cur:"USD", flag:"🇺🇸", sub:"전기차 · 에너지 · 자율주행",
+    p:{2012:3.8,2015:12.5,2017:21.5,2019:25.5,2020:235.0,2022:177.9,2025:256.0} },
+  { id:"aapl", name:"Apple", ticker:"AAPL", cur:"USD", flag:"🇺🇸", sub:"아이폰 · Mac · 서비스",
+    p:{2008:2.9,2010:9.4,2013:19.3,2015:30.0,2018:56.3,2020:132.7,2023:189.0,2025:211.0} },
+  { id:"msft", name:"Microsoft", ticker:"MSFT", cur:"USD", flag:"🇺🇸", sub:"클라우드 · AI · Windows",
+    p:{2010:30.5,2015:46.5,2017:72.8,2019:159.0,2021:336.3,2023:374.5,2025:440.0} },
+  { id:"amzn", name:"Amazon", ticker:"AMZN", cur:"USD", flag:"🇺🇸", sub:"이커머스 · AWS · AI",
+    p:{2010:13.7,2015:47.2,2018:99.1,2020:164.6,2022:95.8,2025:220.0} },
+  { id:"samsung", name:"삼성전자", ticker:"005930", cur:"KRW", flag:"🇰🇷", sub:"반도체 · 스마트폰 · 디스플레이",
+    p:{2010:16800,2013:23200,2016:26700,2018:50200,2020:72000,2022:61800,2025:58000} },
+  { id:"naver", name:"NAVER", ticker:"035420", cur:"KRW", flag:"🇰🇷", sub:"검색 · 커머스 · AI클라우드",
+    p:{2012:83000,2015:103500,2017:132000,2019:153500,2021:430000,2023:183000,2025:195000} },
+  { id:"skhynix", name:"SK하이닉스", ticker:"000660", cur:"KRW", flag:"🇰🇷", sub:"D램 · 낸드 · HBM · AI메모리",
+    p:{2013:29900,2016:37100,2018:92900,2020:89300,2022:77700,2025:185000} },
+  { id:"kakao", name:"Kakao", ticker:"035720", cur:"KRW", flag:"🇰🇷", sub:"카카오톡 · 페이 · 콘텐츠",
+    p:{2017:11800,2019:15500,2021:170500,2022:56700,2024:36200,2025:42000} },
+];
+
+const NOTES = {
+  krw1:  { cur:"KRW", value:10000, face:"₩1만", tag:"만원권",  c:"#6FA585", band:"#4E7E63" },
+  krw5:  { cur:"KRW", value:50000, face:"₩5만", tag:"5만원권", c:"#D8B24E", band:"#B0902F" },
+  usd100:{ cur:"USD", value:100,   face:"$100", tag:"백불권",  c:"#5E926B", band:"#436B4E" },
+  usd1:  { cur:"USD", value:1,     face:"$1",   tag:"일불권",  c:"#869C86", band:"#5C765C" },
+};
+
+// ── formatters ──
+function fmtKRW(v){ if(v>=1e12)return(v/1e12).toFixed(1)+"조원"; if(v>=1e8)return(v/1e8).toFixed(1)+"억원"; if(v>=1e4)return Math.round(v/1e4)+"만원"; return Math.round(v).toLocaleString()+"원"; }
+function fmtUSD(v){ if(v>=1e6)return"$"+(v/1e6).toFixed(2)+"M"; return"$"+Math.round(v).toLocaleString(); }
+function fmtAmt(v,cur){ return cur==="KRW"?fmtKRW(v):fmtUSD(v); }
+function toCur(a,f,t){ return f===t?a:(f==="KRW"?a/USD_KRW:a*USD_KRW); }
+function fmtH(mm){ if(mm<10)return mm.toFixed(1)+"mm"; if(mm<1000)return(mm/10).toFixed(1)+"cm"; if(mm<1e6)return(mm/1000).toFixed(2)+"m"; return Math.round(mm/1000).toLocaleString()+"m"; }
+function fmtW(g){ if(g<1000)return Math.round(g)+"g"; if(g<1e6)return(g/1000).toFixed(1)+"kg"; return(g/1e6).toFixed(2)+"톤"; }
+function yrs(o){ return Object.keys(o).map(Number).sort((a,b)=>a-b); }
+function esc(s){ return String(s); }
+
+// ── state ──
+const S = { mode:"past", stockId:null, year:null, amount:"", itype:"lump",
+  fAmount:"", fYears:10, fCur:"KRW", pastDenom:null, futDenom:null };
+const $ = id => document.getElementById(id);
+
+// ── charts (inline SVG) ──
+function areaChart(data, fmt, withInvested){
+  if(!data || data.length<2) return "";
+  const W=520,H=190,P={l:10,r:10,t:16,b:24};
+  let vals=data.map(d=>d.value);
+  if(withInvested) vals=vals.concat(data.map(d=>d.invested||0));
+  let max=Math.max.apply(null,vals), min=Math.min.apply(null,vals.concat([0]));
+  const span=(max-min)||1;
+  const X=i=>P.l+i*(W-P.l-P.r)/(data.length-1);
+  const Y=v=>P.t+(1-(v-min)/span)*(H-P.t-P.b);
+  const pv=data.map((d,i)=>X(i)+" "+Y(d.value));
+  const lineV="M"+pv.join(" L");
+  const areaV=lineV+" L "+X(data.length-1)+" "+(H-P.b)+" L "+X(0)+" "+(H-P.b)+" Z";
+  let extra="";
+  if(withInvested){
+    const pi=data.map((d,i)=>X(i)+" "+Y(d.invested||0));
+    extra='<path d="M'+pi.join(" L")+'" fill="none" stroke="'+CC.gold+'" stroke-width="1.5" stroke-dasharray="4 3"/>';
+  }
+  const step=Math.ceil(data.length/5);
+  const labels=data.map((d,i)=>(i===0||i===data.length-1||i%step===0)?
+    '<text x="'+X(i)+'" y="'+(H-7)+'" fill="'+CC.faint+'" font-size="10" text-anchor="middle" font-family="'+monoFA+'">'+d.label+'</text>':"").join("");
+  const lx=X(data.length-1), ly=Y(data[data.length-1].value);
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="height:auto;display:block">'+
+    '<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">'+
+    '<stop offset="0%" stop-color="'+CC.green+'" stop-opacity="0.22"/>'+
+    '<stop offset="100%" stop-color="'+CC.green+'" stop-opacity="0"/></linearGradient></defs>'+
+    '<path d="'+areaV+'" fill="url(#ag)"/>'+
+    '<path d="'+lineV+'" fill="none" stroke="'+CC.green+'" stroke-width="2"/>'+extra+
+    '<circle cx="'+lx+'" cy="'+ly+'" r="3" fill="'+CC.green+'"/>'+labels+'</svg>';
+}
+function lineChart(data, series){
+  if(!data || data.length<2) return "";
+  const W=520,H=200,P={l:10,r:10,t:16,b:24};
+  let all=[]; series.forEach(s=>data.forEach(d=>all.push(d[s.key])));
+  let max=Math.max.apply(null,all), min=Math.min.apply(null,all.concat([0]));
+  const span=(max-min)||1;
+  const X=i=>P.l+i*(W-P.l-P.r)/(data.length-1);
+  const Y=v=>P.t+(1-(v-min)/span)*(H-P.t-P.b);
+  const paths=series.map(s=>{
+    const pts=data.map((d,i)=>X(i)+" "+Y(d[s.key]));
+    return '<path d="M'+pts.join(" L")+'" fill="none" stroke="'+s.color+'" stroke-width="'+(s.w||2)+'" '+(s.dash?'stroke-dasharray="'+s.dash+'"':"")+'/>';
+  }).join("");
+  const step=Math.max(1,Math.ceil(data.length/6));
+  const labels=data.map((d,i)=>(i%step===0||i===data.length-1)?
+    '<text x="'+X(i)+'" y="'+(H-7)+'" fill="'+CC.faint+'" font-size="9" text-anchor="middle" font-family="'+monoFA+'">'+d.label+'</text>':"").join("");
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="height:auto;display:block">'+paths+labels+'</svg>';
+}
+
+// ── money stack ──
+function moneyStack(amountBase, baseCur, sec, caption){
+  const denomKey = sec==="past" ? (S.pastDenom||(baseCur==="USD"?"usd100":"krw1"))
+                                : (S.futDenom ||(baseCur==="USD"?"usd100":"krw1"));
+  const note=NOTES[denomKey];
+  const amt=toCur(amountBase,baseCur,note.cur);
+  const count=Math.floor(amt/note.value);
+  const opts=[["krw1","₩1만"],["krw5","₩5만"],["usd100","$100"],["usd1","$1"]];
+  const toggle='<div class="row">'+opts.map(o=>
+    '<button class="pill sm'+(o[0]===denomKey?" on":"")+'" data-denom="'+o[0]+'">'+o[1]+'</button>').join("")+'</div>';
+  const head='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;flex-wrap:wrap;gap:8px">'+
+    '<div style="font-family:var(--mono);font-size:11px;color:var(--gold)">현금으로 보면</div>'+toggle+'</div>';
+  if(count<1) return '<div class="card">'+head+'<div style="color:var(--dim);font-size:.86rem">이 단위로 세기엔 금액이 너무 작아요.</div></div>';
+
+  const bundles=Math.floor(count/100), loose=count%100;
+  const hMm=count*0.1, wG=count*1.0;
+  const fx=note.cur!==baseCur ? "환율 ₩"+USD_KRW.toLocaleString()+"/$ 적용" : null;
+  const useB=count>=100, unit=useB?Math.max(bundles,1):count;
+  const shown=Math.min(unit,60), over=unit-shown;
+  const cm=hMm/10;
+  let scale=null;
+  if(cm>=170) scale="🧍 키 170cm 사람 "+(cm/170).toFixed(1)+"명 높이";
+  else if(cm>=30) scale="📏 "+cm.toFixed(0)+"cm — 손에 쥐기 빠듯한 두께";
+
+  let bars="";
+  for(let i=0;i<shown;i++){
+    const j=((i*37)%7)-3;
+    const w=78-(i%3)*3, h=useB?8:5;
+    const lbl=(i===shown-1)?'<span style="position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;color:'+note.c+';white-space:nowrap">'+note.face+'</span>':"";
+    bars+='<div style="width:'+w+'%;max-width:250px;height:'+h+'px;background:linear-gradient(180deg,'+note.c+','+note.band+');border-radius:2px;margin-top:-1px;border-top:1px solid '+note.c+';transform:translateX('+j+'px) rotate('+(j*0.14)+'deg);box-shadow:0 1px 0 rgba(0,0,0,.28);position:relative">'+lbl+'</div>';
+  }
+
+  const stats='<div class="row" style="margin-bottom:16px">'+
+    (useB?'<span class="stag">'+bundles.toLocaleString()+'다발'+(loose?" +"+loose+"장":"")+'</span>':"")+
+    '<span class="stag">높이 '+fmtH(hMm)+'</span>'+
+    '<span class="stag">무게 '+fmtW(wG)+'</span></div>';
+  const headline='<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px">'+
+    '<span style="font-size:clamp(1.7rem,6.5vw,2.3rem);font-weight:900;color:'+note.c+';letter-spacing:-.02em;line-height:1">'+count.toLocaleString()+'</span>'+
+    '<span style="font-size:1rem;color:var(--dim)">장</span>'+
+    '<span style="font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:auto">'+note.tag+'</span></div>';
+  const pile='<div style="display:flex;flex-direction:column-reverse;align-items:center;min-height:44px;padding-top:8px">'+bars+'</div>';
+  const overEl=over>0?'<div style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:9px">… 외 '+over.toLocaleString()+(useB?"다발":"장")+' 더</div>':"";
+  const scaleEl=scale?'<div style="text-align:center;font-size:.82rem;color:var(--dim);margin-top:11px">'+scale+'</div>':"";
+  const capLine=(caption||fx)?'<div style="text-align:center;font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:8px">'+[caption,fx].filter(Boolean).join(" · ")+'</div>':"";
+  return '<div class="card">'+head+headline+stats+pile+overEl+scaleEl+capLine+'</div>';
+}
+
+// ── PAST compute ──
+function computePast(){
+  const st=STOCKS.find(s=>s.id===S.stockId);
+  if(!st||!S.year||S.amount===""||isNaN(+S.amount)||+S.amount<=0) return null;
+  const ys=yrs(st.p), last=ys[ys.length-1];
+  const cur=st.cur, amt=cur==="KRW"?+S.amount*10000:+S.amount;
+  const buyP=st.p[S.year], sellP=st.p[last], span=last-S.year;
+  if(S.itype==="lump"){
+    const shares=amt/buyP, curVal=shares*sellP, mult=curVal/amt;
+    const cd=ys.filter(y=>y>=S.year).map(y=>({label:y+"년",value:(amt/buyP)*st.p[y]}));
+    return {type:"lump",cur,amt,buyP,shares,curVal,mult,profit:curVal-amt,span,cd,st};
+  } else {
+    const inv=ys.filter(y=>y>=S.year); let tShares=0,tInv=0; const cd=[];
+    inv.forEach((y,i)=>{ const ny=inv[i+1]||last+1; const m=(ny-y)*12;
+      tShares+=(amt*m)/st.p[y]; tInv+=amt*m; cd.push({label:y+"년",value:tShares*st.p[y],invested:tInv}); });
+    const curVal=tShares*sellP, mult=curVal/tInv;
+    return {type:"monthly",cur,monthly:amt,totalInvested:tInv,curVal,mult,profit:curVal-tInv,span,cd,st};
+  }
+}
+
+// ── FUTURE compute ──
+function computeFuture(){
+  if(S.fAmount===""||isNaN(+S.fAmount)||+S.fAmount<=0) return null;
+  const principal=S.fCur==="KRW"?+S.fAmount*10000:+S.fAmount;
+  const sc=[{key:"c",label:"안정형",rate:.07,color:CC.green},
+            {key:"m",label:"성장형",rate:.15,color:CC.gold},
+            {key:"a",label:"공격형",rate:.25,color:CC.red}];
+  const chart=[];
+  for(let y=0;y<=S.fYears;y++){ const pt={label:y===0?"현재":y+"년"};
+    sc.forEach(s=>pt[s.key]=principal*Math.pow(1+s.rate,y)); chart.push(pt); }
+  const finals=sc.map(s=>({...s,final:principal*Math.pow(1+s.rate,S.fYears),mult:Math.pow(1+s.rate,S.fYears)}));
+  return {chart,finals,principal};
+}
+
+// ── RENDER: past controls ──
+function renderStockGrid(){
+  $("stockGrid").innerHTML = STOCKS.map(s=>
+    '<div class="sc'+(S.stockId===s.id?" on":"")+'" data-stock="'+s.id+'">'+
+    '<div class="tk">'+s.flag+' '+s.ticker+'</div>'+
+    '<div class="nm">'+s.name+'</div><div class="sb">'+s.sub+'</div></div>').join("");
+}
+function renderYearSec(){
+  const st=STOCKS.find(s=>s.id===S.stockId);
+  if(!st){ $("yearSec").innerHTML=""; return; }
+  const ys=yrs(st.p), buy=ys.slice(0,-1);
+  $("yearSec").innerHTML='<div class="lbl">언제 샀더라면?</div><div class="row">'+
+    buy.map(y=>'<button class="pill'+(S.year===y?" on":"")+'" data-year="'+y+'">'+y+'년</button>').join("")+'</div>';
+}
+function renderTypeSec(){
+  if(!S.stockId||!S.year){ $("typeSec").innerHTML=""; return; }
+  $("typeSec").innerHTML='<div class="lbl">투자 방식</div><div class="flex">'+
+    '<button class="fb'+(S.itype==="lump"?" on":"")+'" data-itype="lump">일시투자</button>'+
+    '<button class="fb'+(S.itype==="monthly"?" on":"")+'" data-itype="monthly">월 적립식</button></div>';
+}
+function renderAmtSec(){
+  const st=STOCKS.find(s=>s.id===S.stockId);
+  if(!st||!S.year){ $("amtSec").innerHTML=""; return; }
+  const krw=st.cur==="KRW";
+  const unit=krw?"(만원)":"(USD)";
+  const when=S.itype==="monthly"?(S.year+"년부터 매월"):(S.year+"년에");
+  const ph=krw?"예: 100 → 100만원":"예: 1000 → $1,000";
+  const quick=krw?[["100","100만"],["300","300만"],["500","500만"],["1000","1000만"],["3000","3000만"]]
+                 :[["500","$500"],["1000","$1k"],["3000","$3k"],["5000","$5k"],["10000","$10k"]];
+  $("amtSec").innerHTML='<div class="lbl">'+when+' 얼마를? <span class="x">'+unit+'</span></div>'+
+    '<input class="input" id="amtInput" type="number" placeholder="'+ph+'" value="'+esc(S.amount)+'">'+
+    '<div class="row" style="margin-top:10px">'+quick.map(q=>'<button class="pill sm" data-qamt="'+q[0]+'">'+q[1]+'</button>').join("")+'</div>';
+}
+function renderPastResult(){
+  const r=computePast();
+  if(!r){ $("pastResult").innerHTML=""; return; }
+  const st=r.st, plus=r.mult>=1;
+  const big=fmtAmt(r.curVal,r.cur);
+  const usdLine=r.cur==="USD"?'<div class="sub">≈ '+fmtKRW(r.curVal*USD_KRW)+'</div>':"";
+  const badges='<div class="badges">'+
+    '<span class="bdg" style="color:'+CC.gold+';border-color:'+CC.gold+'40;background:'+CC.gold+'15">'+r.mult.toFixed(1)+'배 수익</span>'+
+    '<span class="bdg" style="color:'+CC.green+';border-color:'+CC.green+'40;background:'+CC.green+'15">+'+((r.mult-1)*100).toFixed(0)+'%</span>'+
+    '<span class="bdg" style="color:var(--dim);border-color:var(--line)">'+r.span+'년 보유</span></div>';
+  let detail="";
+  if(r.type==="lump"){
+    detail=drow("투자금",fmtAmt(r.amt,r.cur))+
+      drow("매수 단가",r.cur==="KRW"?Math.round(st.p[S.year]).toLocaleString()+"원":"$"+st.p[S.year])+
+      drow("보유 주수",r.shares.toFixed(2)+"주")+
+      drow("평가 수익","+"+fmtAmt(r.profit,r.cur),CC.green);
+  } else {
+    detail=drow("총 투자금",fmtAmt(r.totalInvested,r.cur))+
+      drow("월 납입",fmtAmt(r.monthly,r.cur))+
+      drow("기간",r.span+"년 ("+(r.span*12)+"개월)")+
+      drow("평가 수익","+"+fmtAmt(r.profit,r.cur),CC.green);
+  }
+  const card='<div class="rcard">'+
+    '<div class="lab">'+S.year+'년 '+(r.type==="lump"?"일시투자":"월 적립식")+' · 결과</div>'+
+    '<div class="big" style="color:'+(plus?CC.green:CC.red)+'">'+big+'</div>'+usdLine+badges+detail+'</div>';
+
+  const stack=moneyStack(r.curVal,r.cur,"past",null);
+
+  let chart="";
+  if(r.cd.length>1){
+    chart='<div class="card"><div style="font-family:var(--mono);font-size:11px;color:var(--gold);margin-bottom:14px">포트폴리오 가치 추이</div>'+
+      areaChart(r.cd,(v)=>fmtAmt(v,r.cur),r.type==="monthly")+
+      (r.type==="monthly"?'<div style="display:flex;gap:14px;margin-top:7px;font-size:11px;color:var(--dim)"><span>— <span style="color:'+CC.green+'">평가금</span></span><span>- - <span style="color:'+CC.gold+'">누적 투자금</span></span></div>':"")+
+      '</div>';
+  }
+  const amtTxt=fmtAmt(r.type==="lump"?r.amt:r.monthly,r.cur);
+  const emo=r.mult>=20?" 🤯 상상도 못 했던 금액이죠.":r.mult>=5?" 💰 꽤 좋은 결과네요.":"";
+  const note='<div class="note"><div class="h">껄껄껄</div><div class="b">'+
+    S.year+'년에 <strong>'+amtTxt+'</strong>'+(r.type==="monthly"?"씩 매달 넣었더라면":"을 투자했더라면")+
+    '... 지금 <strong style="color:'+CC.green+'">'+big+'</strong>이 됐을 거예요.'+emo+'</div></div>';
+
+  $("pastResult").innerHTML=card+stack+chart+note;
+}
+function drow(k,v,color){ return '<div class="drow"><span class="k">'+k+'</span><span class="v" style="color:'+(color||"var(--ink)")+'">'+v+'</span></div>'; }
+
+// ── RENDER: future controls ──
+function renderFcur(){
+  $("fcurSec").innerHTML='<div class="flex">'+
+    '<button class="fb'+(S.fCur==="KRW"?" on":"")+'" data-fcur="KRW">원화 (만원)</button>'+
+    '<button class="fb'+(S.fCur==="USD"?" on":"")+'" data-fcur="USD">달러 (USD)</button></div>';
+}
+function renderFAmt(){
+  const krw=S.fCur==="KRW";
+  const ph=krw?"예: 1000 → 1,000만원":"예: 10000 → $10,000";
+  const quick=krw?[["100","100만"],["500","500만"],["1000","1천만"],["3000","3천만"],["10000","1억"]]
+                 :[["1000","$1k"],["5000","$5k"],["10000","$10k"],["50000","$50k"],["100000","$100k"]];
+  $("fAmtSec").innerHTML='<div class="lbl">초기 투자금 <span class="x">'+(krw?"(만원)":"(USD)")+'</span></div>'+
+    '<input class="input" id="fAmtInput" type="number" placeholder="'+ph+'" value="'+esc(S.fAmount)+'">'+
+    '<div class="row" style="margin-top:10px">'+quick.map(q=>'<button class="pill sm" data-fqamt="'+q[0]+'">'+q[1]+'</button>').join("")+'</div>';
+}
+function renderFYears(){
+  $("fyearsSec").innerHTML='<input type="range" min="1" max="30" value="'+S.fYears+'" id="fyRange">'+
+    '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-top:5px">'+
+    '<span>1년</span><span style="font-family:var(--mono);color:var(--gold);font-weight:700" id="fyLabel">'+S.fYears+'년 후</span><span>30년</span></div>';
+}
+function renderFutureResult(){
+  const f=computeFuture();
+  if(!f){ $("futureResult").innerHTML=""; return; }
+  const cards='<div class="scn">'+f.finals.map(s=>
+    '<div class="it" style="border:1px solid '+s.color+'28;border-left:3px solid '+s.color+'">'+
+    '<div><div style="font-family:var(--mono);font-size:11px;color:'+s.color+';margin-bottom:3px">'+s.label+' · 연 '+(s.rate*100).toFixed(0)+'%</div>'+
+    '<div style="font-size:.82rem;color:var(--dim)">'+S.fYears+'년 복리</div></div>'+
+    '<div style="text-align:right"><div style="font-size:1.28rem;font-weight:800;color:'+s.color+'">'+(S.fCur==="KRW"?fmtKRW(s.final):fmtUSD(s.final))+'</div>'+
+    '<div style="font-family:var(--mono);font-size:11px;color:var(--dim)">'+s.mult.toFixed(1)+'배</div></div></div>').join("")+'</div>';
+
+  const stack=moneyStack(f.finals[1].final,S.fCur,"future","성장형 15% 기준");
+
+  const chart='<div class="card"><div style="font-family:var(--mono);font-size:11px;color:var(--gold);margin-bottom:14px">성장 시나리오</div>'+
+    lineChart(f.chart,[{key:"c",color:CC.green},{key:"m",color:CC.gold,w:2.5},{key:"a",color:CC.red,dash:"5 3"}])+
+    '<div class="row" style="margin-top:8px;font-size:11px;color:var(--dim)"><span>— <span style="color:'+CC.green+'">안정 7%</span></span><span>— <span style="color:'+CC.gold+'">성장 15%</span></span><span>- - <span style="color:'+CC.red+'">공격 25%</span></span></div></div>';
+
+  const base=S.fCur==="KRW"?fmtKRW(+S.fAmount*10000):fmtUSD(+S.fAmount);
+  const grow=S.fCur==="KRW"?fmtKRW(f.finals[1].final):fmtUSD(f.finals[1].final);
+  const dream=f.finals[2].mult>=10?" 불가능하다고 생각했던 금액이 현실이 됩니다. 🚀":"";
+  const note='<div class="note"><div class="h">지금이라도</div><div class="b">'+
+    S.fYears+'년만 버티면, <strong>'+base+'</strong>이 <strong style="color:'+CC.gold+'">'+grow+'</strong>가 될 수 있어요.'+dream+'</div></div>';
+
+  $("futureResult").innerHTML=cards+stack+chart+note;
+}
+
+// ── events ──
+$("tabPast").onclick=()=>{ S.mode="past"; $("tabPast").classList.add("on"); $("tabFuture").classList.remove("on"); $("pastPane").classList.remove("hide"); $("futurePane").classList.add("hide"); };
+$("tabFuture").onclick=()=>{ S.mode="future"; $("tabFuture").classList.add("on"); $("tabPast").classList.remove("on"); $("futurePane").classList.remove("hide"); $("pastPane").classList.add("hide"); };
+
+$("stockGrid").addEventListener("click",e=>{ const el=e.target.closest("[data-stock]"); if(!el)return;
+  S.stockId=el.dataset.stock; S.year=null; S.amount=""; S.pastDenom=null;
+  renderStockGrid(); renderYearSec(); $("typeSec").innerHTML=""; $("amtSec").innerHTML=""; $("pastResult").innerHTML=""; });
+
+$("yearSec").addEventListener("click",e=>{ const el=e.target.closest("[data-year]"); if(!el)return;
+  S.year=+el.dataset.year; renderYearSec(); renderTypeSec(); renderAmtSec(); renderPastResult(); });
+
+$("typeSec").addEventListener("click",e=>{ const el=e.target.closest("[data-itype]"); if(!el)return;
+  S.itype=el.dataset.itype; renderTypeSec(); renderAmtSec(); renderPastResult(); });
+
+$("amtSec").addEventListener("input",e=>{ if(e.target.id==="amtInput"){ S.amount=e.target.value; renderPastResult(); } });
+$("amtSec").addEventListener("click",e=>{ const el=e.target.closest("[data-qamt]"); if(!el)return;
+  S.amount=el.dataset.qamt; const inp=$("amtInput"); if(inp)inp.value=S.amount; renderPastResult(); });
+
+$("pastResult").addEventListener("click",e=>{ const el=e.target.closest("[data-denom]"); if(!el)return;
+  S.pastDenom=el.dataset.denom; renderPastResult(); });
+
+$("fcurSec").addEventListener("click",e=>{ const el=e.target.closest("[data-fcur]"); if(!el)return;
+  S.fCur=el.dataset.fcur; S.fAmount=""; S.futDenom=null; renderFcur(); renderFAmt(); renderFutureResult(); });
+
+$("fAmtSec").addEventListener("input",e=>{ if(e.target.id==="fAmtInput"){ S.fAmount=e.target.value; renderFutureResult(); } });
+$("fAmtSec").addEventListener("click",e=>{ const el=e.target.closest("[data-fqamt]"); if(!el)return;
+  S.fAmount=el.dataset.fqamt; const inp=$("fAmtInput"); if(inp)inp.value=S.fAmount; renderFutureResult(); });
+
+$("fyearsSec").addEventListener("input",e=>{ if(e.target.id==="fyRange"){ S.fYears=+e.target.value; const l=$("fyLabel"); if(l)l.textContent=S.fYears+"년 후"; renderFutureResult(); } });
+
+$("futureResult").addEventListener("click",e=>{ const el=e.target.closest("[data-denom]"); if(!el)return;
+  S.futDenom=el.dataset.denom; renderFutureResult(); });
+
+// ── init ──
+renderStockGrid();
+renderFcur(); renderFAmt(); renderFYears();
+</script>
+</body>
+</html>
